@@ -7,6 +7,8 @@ kaboom({
 });
 
 const MOVE_SPEED = 120;
+const SKELETOR_SPEED = 60;
+const SLICER_SPEED = 100;
 
 //Sprites
 loadRoot("https://i.imgur.com/");
@@ -51,8 +53,8 @@ scene("game", ({ level, score }) => {
       "yccccccccw",
       "a        b",
       ")        )",
-      "a        b",
-      "a        b",
+      "a     }  b",
+      "%        b",
       "a    $   b",
       ")   }    )",
       "a        b",
@@ -71,7 +73,7 @@ scene("game", ({ level, score }) => {
     x: [sprite("bottom-left-wall"), solid(), "wall"],
     y: [sprite("top-left-wall"), solid(), "wall"],
     z: [sprite("bottom-right-wall"), solid(), "wall"],
-    "%": [sprite("left-door"), solid(), "door"],
+    "%": [sprite("left-door"), solid(), "door", "wall"],
     "^": [sprite("top-door"), "next-level"],
     $: [sprite("stairs"), "next-level"],
     "*": [sprite("slicer"), "slicer", { dir: -1 }, "dangerous"],
@@ -145,6 +147,56 @@ scene("game", ({ level, score }) => {
     player.move(0, MOVE_SPEED);
     player.dir = vec2(0, 1);
   });
+
+  function spawnKaboom(p) {
+    const obj = add([sprite("kaboom"), pos(p), "kaboom"]);
+    wait(1, () => {
+      destroy(obj);
+    });
+  }
+
+  keyPress("space", () => [spawnKaboom(player.pos.add(player.dir.scale(48)))]);
+
+  collides("kaboom", "skeletor", (k, s) => {
+    camShake(4);
+    wait(1, () => {
+      destroy(k);
+    });
+    destroy(s);
+    scoreLabel.value++;
+    scoreLabel.text = scoreLabel.value;
+  });
+
+  // Enemies
+
+  action("slicer", (s) => {
+    s.move(s.dir * SLICER_SPEED, 0);
+  });
+
+  collides("slicer", "wall", (s) => {
+    s.dir = -s.dir;
+  });
+
+  player.overlaps("dangerous", () => {
+    go("lose", { score: scoreLabel.value });
+  });
+
+  action("skeletor", (s) => {
+    s.move(0, s.dir * SKELETOR_SPEED);
+    s.timer -= dt();
+    if (s.timer <= 0) {
+      s.dir = -s.dir;
+      s.timer = rand(5);
+    }
+  });
+
+  collides("skeletor", "wall", (s) => {
+    s.dir = -s.dir;
+  });
+});
+
+scene("lose", ({ score }) => {
+  add([text(score, 32), origin("center"), pos(width() / 2, height() / 2)]);
 });
 
 start("game", { level: 0, score: 0 });
