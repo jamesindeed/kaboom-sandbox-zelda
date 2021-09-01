@@ -3,7 +3,7 @@ kaboom({
   fullscreen: true,
   scale: 1,
   debug: true,
-  // clearColor: [0, 0, 1, 1]
+  clearColor: [0, 0, 0, 1],
 });
 
 const MOVE_SPEED = 120;
@@ -83,22 +83,22 @@ scene("game", ({ level, score }) => {
   };
   addLevel(maps[level], levelCfg);
 
-  //   add([sprite("bg", layer("bg"))]);
+  add([sprite("bg"), layer("bg")]);
 
   // Score
   const scoreLabel = add([
     text("0"),
-    pos(400, 450),
+    pos(30, 450),
     layer("ui"),
     {
       value: score,
     },
-    scale(3),
+    scale(2),
   ]);
 
   add([
     text("level " + parseInt(level + 1)),
-    pos(400, 485),
+    pos(30, 485),
     scale(2),
     layer("ui"),
   ]);
@@ -148,6 +148,7 @@ scene("game", ({ level, score }) => {
     player.dir = vec2(0, 1);
   });
 
+  //fireball
   function spawnKaboom(p) {
     const obj = add([sprite("kaboom"), pos(p), "kaboom"]);
     wait(1, () => {
